@@ -14,6 +14,9 @@ ENTITY nco IS
 		init 			: IN  std_logic;
 
 		freq_word 		: IN  std_logic_vector(NCO_W -1 DOWNTO 0);
+
+		freq_adj_zero 	: IN  std_logic;
+		freq_adj_valid 	: IN  std_logic;
 		freq_adjust 	: IN  std_logic_vector(NCO_W -1 DOWNTO 0);
 
 		phase    		: OUT std_logic_vector(NCO_W -1 DOWNTO 0);
@@ -32,6 +35,7 @@ ARCHITECTURE rtl OF nco IS
 	SIGNAL phase_acc 				: unsigned(NCO_W -1 DOWNTO 0);
 	SIGNAL phase_acc_msbs 			: std_logic_vector(1 DOWNTO 0); 
 	SIGNAL phase_delta_adjusted 	: unsigned(NCO_W -1 DOWNTO 0);
+	SIGNAL freq_adjust_q 			: std_logic_vector(NCO_W -1 DOWNTO 0);
 
 BEGIN
 
@@ -48,13 +52,23 @@ BEGIN
 					phase_delta_adjusted <= (OTHERS => '0');
 					phase_acc 			 <= (OTHERS => '0');
 					phase_acc_msbs 		 <= (OTHERS => '1');
+					freq_adjust_q 		 <= (OTHERS => '0');
 					rollover_pi2 		 <= '0';
 					rollover_pi 		 <= '0';
 					rollover_3pi2 	 	 <= '0';
 					rollover_2pi		 <= '1';
 				ELSE
 
-					phase_delta_adjusted <= unsigned(signed(freq_word) + signed(freq_adjust));
+					IF freq_adj_valid = '1' THEN
+						freq_adjust_q <= freq_adjust;
+					END IF;
+
+					IF freq_adj_zero = '1' THEN
+						freq_adjust_q <= (OTHERS => '0');
+					END IF;
+
+					phase_delta_adjusted <= unsigned(signed(freq_word) + signed(freq_adjust_q));
+
 					phase_acc  			 <= phase_sum;
 					phase_acc_msbs 		 <= std_logic_vector(phase_sum(NCO_W -1 DOWNTO NCO_W -2));
 					v_phase_acc_msbs 	 := std_logic_vector(phase_sum(NCO_W -1 DOWNTO NCO_W -2));
