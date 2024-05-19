@@ -7,6 +7,7 @@ USE ieee.numeric_std.ALL;
 ENTITY nco IS 
 	GENERIC (
 		NCO_W 			: NATURAL := 32;
+		PHASE_INIT 		: UNSIGNED(NCO_W -1 DOWNTO 0) := (OTHERS => '0');
 		DSP_SLICE 		: BOOLEAN := False
 	);
 	PORT (
@@ -31,6 +32,8 @@ END ENTITY nco;
 
 ARCHITECTURE rtl OF nco IS 
 
+	CONSTANT PHASE_MSBS_INIT 		: std_logic_vector(1 DOWNTO 0) := std_logic_vector(resize(shift_right(PHASE_INIT -1, 30), 2));
+
 	SIGNAL phase_sum 				: unsigned(NCO_W -1 DOWNTO 0);
 	SIGNAL phase_acc 				: unsigned(NCO_W -1 DOWNTO 0);
 	SIGNAL phase_acc_msbs 			: std_logic_vector(1 DOWNTO 0); 
@@ -49,9 +52,9 @@ BEGIN
 		BEGIN
 			IF clk'EVENT AND clk = '1' THEN
 				IF init = '1' THEN
-					phase_delta_adjusted <= (OTHERS => '0');
-					phase_acc 			 <= (OTHERS => '0');
-					phase_acc_msbs 		 <= (OTHERS => '1');
+					phase_delta_adjusted <= unsigned(PHASE_INIT);
+					phase_acc 			 <= unsigned(PHASE_INIT);
+					phase_acc_msbs 		 <= PHASE_MSBS_INIT;
 					freq_adjust_q 		 <= (OTHERS => '0');
 					rollover_pi2 		 <= '0';
 					rollover_pi 		 <= '0';
