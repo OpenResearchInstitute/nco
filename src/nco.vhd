@@ -79,6 +79,8 @@ ENTITY nco IS
 		clk 			: IN  std_logic;
 		init 			: IN  std_logic;
 
+		enable 			: IN  std_logic;
+
 		freq_word 		: IN  std_logic_vector(NCO_W -1 DOWNTO 0);
 
 		freq_adj_zero 	: IN  std_logic;
@@ -143,46 +145,50 @@ BEGIN
 					rollover_2pi		 <= '1';
 				ELSE
 
-					IF freq_adj_valid = '1' THEN
-						freq_adjust_q <= freq_adjust;
-					END IF;
+					IF enable = '1' THEN
 
-					IF freq_adj_zero = '1' THEN
-						freq_adjust_q <= (OTHERS => '0');
-					END IF;
+						IF freq_adj_valid = '1' THEN
+							freq_adjust_q <= freq_adjust;
+						END IF;
 
-					phase_delta_adjusted <= unsigned(signed(freq_word) + signed(freq_adjust_q));
+						IF freq_adj_zero = '1' THEN
+							freq_adjust_q <= (OTHERS => '0');
+						END IF;
 
-					phase_acc  			 <= phase_sum;
-					phase_acc_msbs 		 <= std_logic_vector(phase_sum(NCO_W -1 DOWNTO NCO_W -2));
-					v_phase_acc_msbs 	 := std_logic_vector(phase_sum(NCO_W -1 DOWNTO NCO_W -2));
+						phase_delta_adjusted <= unsigned(signed(freq_word) + signed(freq_adjust_q));
 
-					rollover_pi2 		 <= '0';
-					rollover_pi 		 <= '0';
-					rollover_3pi2 	 	 <= '0';
-					rollover_2pi		 <= '0';
+						phase_acc  			 <= phase_sum;
+						phase_acc_msbs 		 <= std_logic_vector(phase_sum(NCO_W -1 DOWNTO NCO_W -2));
+						v_phase_acc_msbs 	 := std_logic_vector(phase_sum(NCO_W -1 DOWNTO NCO_W -2));
 
-					tclk_even			 <= '0';
-					tclk_odd 			 <= '0';
+						rollover_pi2 		 <= '0';
+						rollover_pi 		 <= '0';
+						rollover_3pi2 	 	 <= '0';
+						rollover_2pi		 <= '0';
 
-					IF phase_acc_msbs = "11" AND v_phase_acc_msbs = "00" THEN
-						rollover_2pi	 <= '1';
-						tclk_odd 	     <= '1';
-					END IF;
+						tclk_even			 <= '0';
+						tclk_odd 			 <= '0';
 
-					IF phase_acc_msbs = "00" AND v_phase_acc_msbs = "01" THEN
-						rollover_pi2 	 <= '1';
-						tclk_even 	     <= '1';
-					END IF;
+						IF phase_acc_msbs = "11" AND v_phase_acc_msbs = "00" THEN
+							rollover_2pi	 <= '1';
+							tclk_odd 	     <= '1';
+						END IF;
 
-					IF phase_acc_msbs = "01" AND v_phase_acc_msbs = "10" THEN
-						rollover_pi	 	 <= '1';
-						tclk_odd 	     <= '1';
-					END IF;
+						IF phase_acc_msbs = "00" AND v_phase_acc_msbs = "01" THEN
+							rollover_pi2 	 <= '1';
+							tclk_even 	     <= '1';
+						END IF;
 
-					IF phase_acc_msbs = "10" AND v_phase_acc_msbs = "11" THEN
-						rollover_3pi2 	 <= '1';
-						tclk_even 	     <= '1';
+						IF phase_acc_msbs = "01" AND v_phase_acc_msbs = "10" THEN
+							rollover_pi	 	 <= '1';
+							tclk_odd 	     <= '1';
+						END IF;
+
+						IF phase_acc_msbs = "10" AND v_phase_acc_msbs = "11" THEN
+							rollover_3pi2 	 <= '1';
+							tclk_even 	     <= '1';
+						END IF;
+
 					END IF;
 
 				END IF;
