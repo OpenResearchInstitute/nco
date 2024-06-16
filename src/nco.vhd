@@ -72,7 +72,7 @@ USE ieee.numeric_std.ALL;
 ENTITY nco IS 
 	GENERIC (
 		NCO_W 			: NATURAL := 32;
-		PHASE_INIT 		: UNSIGNED(NCO_W -1 DOWNTO 0) := (OTHERS => '0');
+		PHASE_INIT 		: UNSIGNED(32 -1 DOWNTO 0) := (OTHERS => '0');
 		DSP_SLICE 		: BOOLEAN := False
 	);
 	PORT (
