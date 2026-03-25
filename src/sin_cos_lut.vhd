@@ -26,6 +26,8 @@ ARCHITECTURE lut_based OF sin_cos_lut IS
 
 	TYPE sincos_lut_type IS ARRAY(0 TO PHASES -1) OF signed(SINUSOID_W -1 DOWNTO 0);
 
+	CONSTANT FULL_SCALE  : INTEGER := 2**(SINUSOID_W -1) -1;
+
 	CONSTANT UNIT_PERIOD : REAL := 2.0 * MATH_PI / 1024.0;
 
 	FUNCTION fill_sincos_lut(phases : NATURAL; sin_cos : STRING; width : NATURAL) RETURN sincos_lut_type IS
@@ -39,9 +41,9 @@ ARCHITECTURE lut_based OF sin_cos_lut IS
 			theta := real(i) * UNIT_PERIOD;
 
 			IF sin_cos = "SIN" THEN
-				tmp := ROUND(SIN(theta) * 1024.0);
+				tmp := ROUND(SIN(theta) * real(FULL_SCALE));
 			ELSE
-				tmp := ROUND(COS(theta) * 1024.0);
+				tmp := ROUND(COS(theta) * real(FULL_SCALE));
 			END IF;
 
 			v_lut(i) := to_signed(INTEGER(tmp), SINUSOID_W);
